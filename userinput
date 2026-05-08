@@ -1,0 +1,121 @@
+.data
+title:    .asciiz "\n===== TINH DIEM SINH VIEN =====\n"
+msgN:     .asciiz "Nhap so mon hoc: "
+msgScore: .asciiz "Nhap diem: "
+
+avgMsg:   .asciiz "\nDiem trung binh: "
+maxMsg:   .asciiz "\nDiem cao nhat: "
+classMsg: .asciiz "\nXep loai: "
+
+gioi:     .asciiz "Gioi"
+kha:      .asciiz "Kha"
+yeu:      .asciiz "Yeu"
+
+.text
+main:
+
+    # In tieu de
+    li $v0, 4
+    la $a0, title
+    syscall
+
+    # Nhap so mon
+    li $v0, 4
+    la $a0, msgN
+    syscall
+
+    li $v0, 5
+    syscall
+    move $s0, $v0      # s0 = so mon
+
+    # Khoi tao
+    li $t0, 0          # i = 0
+    li $t1, 0          # tong = 0
+    li $t2, 0          # max = 0
+
+loop:
+
+    beq $t0, $s0, done
+
+    # Nhap diem
+    li $v0, 4
+    la $a0, msgScore
+    syscall
+
+    li $v0, 5
+    syscall
+    move $t3, $v0      # diem hien tai
+
+    # tong += diem
+    add $t1, $t1, $t3
+
+    # if diem > max
+    ble $t3, $t2, skip_max
+    move $t2, $t3
+
+skip_max:
+
+    addi $t0, $t0, 1
+    j loop
+
+done:
+
+    # tinh trung binh
+    beq $s0, 0, end
+    div $t1, $s0
+    mflo $t4
+
+    # in trung binh
+    li $v0, 4
+    la $a0, avgMsg
+    syscall
+
+    li $v0, 1
+    move $a0, $t4
+    syscall
+
+    # in max
+    li $v0, 4
+    la $a0, maxMsg
+    syscall
+
+    li $v0, 1
+    move $a0, $t2
+    syscall
+
+    # xep loai
+    li $v0, 4
+    la $a0, classMsg
+    syscall
+
+    # >= 8 -> gioi
+    li $t5, 8
+    bge $t4, $t5, print_gioi
+
+    # >= 5 -> kha
+    li $t5, 5
+    bge $t4, $t5, print_kha
+
+    j print_yeu
+
+print_gioi:
+    li $v0, 4
+    la $a0, gioi
+    syscall
+    j end
+
+print_kha:
+    li $v0, 4
+    la $a0, kha
+    syscall
+    j end
+
+print_yeu:
+    li $v0, 4
+    la $a0, yeu
+    syscall
+
+end:
+
+    li $v0, 10
+    syscall
